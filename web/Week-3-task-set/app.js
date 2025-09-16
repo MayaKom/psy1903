@@ -28,7 +28,7 @@ console.log(over18 || hasGuardianApproval); */
 console.log(count % 2 == 0); */
 
 
-let response = prompt('What is ' + randomNum1 + '+' + randomNum2 + '?');
+/* let response = prompt('What is ' + randomNum1 + '+' + randomNum2 + '?');
 
 
 let feedback = '';
@@ -41,4 +41,13 @@ if (response == (randomNum1 + randomNum2)) {
     feedback = 'Incorrect.';
 }
 
-alert(feedback + ' The expected answer is ' + (randomNum1 + randomNum2));
+alert(feedback + ' The expected answer is ' + (randomNum1 + randomNum2)); */
+
+let age = prompt('How old are you?');
+if (age < 12) {
+    alert('Child');
+} else if (age >= 12 & age < 18) {
+    alert('Teenager');
+} else {
+    alert('Adult');
+}
