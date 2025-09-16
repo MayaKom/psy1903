@@ -43,11 +43,18 @@ if (response == (randomNum1 + randomNum2)) {
 
 alert(feedback + ' The expected answer is ' + (randomNum1 + randomNum2)); */
 
-let age = prompt('How old are you?');
+/* let age = prompt('How old are you?');
 if (age < 12) {
     alert('Child');
 } else if (age >= 12 & age < 18) {
     alert('Teenager');
 } else {
     alert('Adult');
+} */
+
+let num = prompt("Please enter a whole number")
+if (num % 2 == 0) {
+    alert('The number you entered was even')
+} else if (num % 2 == 1) {
+    alert('The number you entered was odd')
 }
