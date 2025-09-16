@@ -1,12 +1,3 @@
-// Identify elements on the page we will update
-let num1 = document.getElementById('num1');
-let num2 = document.getElementById('num2');
-
-let randomNum1 = Math.floor(Math.random() * 10) + 1;
-let randomNum2 = Math.floor(Math.random() * 10) + 1;
-num1.innerHTML = randomNum1;
-num2.innerHTML = randomNum2;
-
 /* let response = prompt('What is your name?');
 let count = response.length;
 console.log(count);
@@ -59,7 +50,7 @@ if (num % 2 == 0) {
     alert('The number you entered was odd')
 } */
 
-alert('In this experiment we will measure your response time.You will be shown a series of simple math equations.Answer these equations as quickly and accurately as you can')
+/* alert('In this experiment we will measure your response time.You will be shown a series of simple math equations.Answer these equations as quickly and accurately as you can')
 
 let start1 = new Date().getTime();
 let answer1 = prompt('what is ' + randomNum1 + "+" + randomNum2);
@@ -101,4 +92,45 @@ if (answer3 == (randomNum1 + randomNum2)) {
 
 alert('You answered ' + answer3 + ' in ' + responseTime3 + ' seconds. Your response was ' + feedback);
 
-alert('Thank you for your participation!');
+alert('Thank you for your participation!'); */
+
+
+// Identify elements on the page we will update
+let num1 = document.getElementById('num1');
+let num2 = document.getElementById('num2');
+
+let start = new Date().getTime();
+let randomNum1 = Math.floor(Math.random() * 10) + 1;
+let randomNum2 = Math.floor(Math.random() * 10) + 1;
+num1.innerHTML = randomNum1;
+num2.innerHTML = randomNum2;
+
+// Create variables to store references to elements on the page
+let form = document.getElementsByTagName('form')[0];
+let results = document.getElementById('results');
+
+
+// Listen for the form to be submitted
+form.addEventListener('submit', function (event) {
+
+    // Prevent the default form submission 
+    event.preventDefault();
+    let end = new Date().getTime();
+    let responseTime = (end - start) / 1000;
+    // Collect the response
+    let answer = form.elements['answer'].value;
+
+    let feedback = ''
+    if (answer == (randomNum1 + randomNum2)) {
+        feedback = 'CORRECT'
+    } else {
+        feedback = 'INCORRECT'
+    }
+
+    let display_message = 'You answered ' + answer + ' in ' + responseTime + ' seconds. Your response was ' + feedback + '. Thank you for your participation!';
+
+
+    // Report the results
+    results.innerHTML = display_message;
+    form.style.display = 'none';
+}); 
