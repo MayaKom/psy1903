@@ -52,9 +52,53 @@ if (age < 12) {
     alert('Adult');
 } */
 
-let num = prompt("Please enter a whole number")
+/* let num = prompt("Please enter a whole number")
 if (num % 2 == 0) {
     alert('The number you entered was even')
 } else if (num % 2 == 1) {
     alert('The number you entered was odd')
+} */
+
+alert('In this experiment we will measure your response time.You will be shown a series of simple math equations.Answer these equations as quickly and accurately as you can')
+
+let start1 = new Date().getTime();
+let answer1 = prompt('what is ' + randomNum1 + "+" + randomNum2);
+
+let end1 = new Date().getTime();
+let responseTime1 = (end1 - start1) / 1000;
+let feedback = ''
+if (answer1 == (randomNum1 + randomNum2)) {
+    feedback = 'CORRECT'
+} else {
+    feedback = 'INCORRECT'
 }
+
+alert('You answered ' + answer1 + ' in ' + responseTime1 + ' seconds. Your response was ' + feedback);
+
+let start2 = new Date().getTime();
+let answer2 = prompt('what is ' + (Math.floor(Math.random() * 10) + 1) + "+" + (Math.floor(Math.random() * 10) + 1));
+
+let end2 = new Date().getTime();
+let responseTime2 = (end2 - start2) / 1000;
+if (answer2 == (randomNum1 + randomNum2)) {
+    feedback = 'CORRECT'
+} else {
+    feedback = 'INCORRECT'
+}
+
+alert('You answered ' + answer2 + ' in ' + responseTime2 + ' seconds. Your response was ' + feedback);
+
+let start3 = new Date().getTime();
+let answer3 = prompt('what is ' + (Math.floor(Math.random() * 10) + 1) + "+" + (Math.floor(Math.random() * 10) + 1));
+
+let end3 = new Date().getTime();
+let responseTime3 = (end3 - start3) / 1000;
+if (answer3 == (randomNum1 + randomNum2)) {
+    feedback = 'CORRECT'
+} else {
+    feedback = 'INCORRECT'
+}
+
+alert('You answered ' + answer3 + ' in ' + responseTime3 + ' seconds. Your response was ' + feedback);
+
+alert('Thank you for your participation!');
