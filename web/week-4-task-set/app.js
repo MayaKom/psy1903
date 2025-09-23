@@ -28,6 +28,7 @@ let words = ["Alice", "Bill", "George"]
 
 console.log(getWordLengths(words)) */
 
+let words = ["Alice", "Bill", "George"]
 function getLongestWord(words) {
     let longestWord = "";
     for (let i = 0; i < words.length; i++) {
@@ -39,3 +40,16 @@ function getLongestWord(words) {
 }
 
 console.log(getLongestWord(words))
+
+
+function getOddNumbers(n) {
+    let results = [];
+    for (let i = 0; i < n.length; i++) {
+        if (n[i] % 2 != 0) {
+            results.push(n[i])
+        }
+
+    }
+    return results
+}
+console.log(getOddNumbers([1, 2, 3, 4, 5]))
