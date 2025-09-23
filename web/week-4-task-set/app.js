@@ -28,7 +28,7 @@ let words = ["Alice", "Bill", "George"]
 
 console.log(getWordLengths(words)) */
 
-let words = ["Alice", "Bill", "George"]
+/* let words = ["Alice", "Bill", "George"]
 function getLongestWord(words) {
     let longestWord = "";
     for (let i = 0; i < words.length; i++) {
@@ -39,10 +39,10 @@ function getLongestWord(words) {
     return longestWord
 }
 
-console.log(getLongestWord(words))
+console.log(getLongestWord(words)) */
 
 
-function getOddNumbers(n) {
+/* function getOddNumbers(n) {
     let results = [];
     for (let i = 0; i < n.length; i++) {
         if (n[i] % 2 != 0) {
@@ -52,4 +52,19 @@ function getOddNumbers(n) {
     }
     return results
 }
-console.log(getOddNumbers([1, 2, 3, 4, 5]))
+console.log(getOddNumbers([1, 2, 3, 4, 5])) */
+
+function filterNumbers(numbers, evenOrOdd) {
+    let results = []
+    for (let i = 0; i < numbers.length; i++) {
+        if (evenOrOdd === "even" && numbers[i] % 2 === 0) {
+            results.push(numbers[i]);
+        } else if (evenOrOdd === "odd" && numbers[i] % 2 !== 0) {
+            results.push(numbers[i]);
+        }
+
+    }
+    return results;
+}
+
+console.log(filterNumbers([1, 2, 3, 4,], "even"))
