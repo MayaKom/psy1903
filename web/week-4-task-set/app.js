@@ -4,7 +4,7 @@
 }
 console.log(celsiusToFahrenheit(40)) */
 
-function convertTemp(temp, convertTo) {
+/* function convertTemp(temp, convertTo) {
     let degrees = 0
     if (convertTo == 'F') {
         degrees = (temp * 1.8) + 32
@@ -14,4 +14,16 @@ function convertTemp(temp, convertTo) {
     return degrees
 }
 
-console.log(convertTemp(104, 'C'))
+console.log(convertTemp(104, 'C')) */
+
+function getWordLengths(words) {
+    let lengths = [];
+    for (let i = 0; i < words.length; i++) {
+        let length = words[i].length
+        lengths.push(length)
+    }
+    return lengths
+}
+let words = ["Alice", "Bill", "George"]
+
+console.log(getWordLengths(words))
