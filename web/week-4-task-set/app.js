@@ -16,7 +16,7 @@ console.log(celsiusToFahrenheit(40)) */
 
 console.log(convertTemp(104, 'C')) */
 
-function getWordLengths(words) {
+/* function getWordLengths(words) {
     let lengths = [];
     for (let i = 0; i < words.length; i++) {
         let length = words[i].length
@@ -26,4 +26,16 @@ function getWordLengths(words) {
 }
 let words = ["Alice", "Bill", "George"]
 
-console.log(getWordLengths(words))
+console.log(getWordLengths(words)) */
+
+function getLongestWord(words) {
+    let longestWord = "";
+    for (let i = 0; i < words.length; i++) {
+        if (words[i].length > longestWord.length) {
+            longestWord = words[i]
+        }
+    }
+    return longestWord
+}
+
+console.log(getLongestWord(words))
