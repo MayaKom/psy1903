@@ -53,7 +53,7 @@ console.log(getLongestWord(words)) */
     return results
 }
 console.log(getOddNumbers([1, 2, 3, 4, 5])) */
-
+/* 
 function filterNumbers(numbers, evenOrOdd) {
     let results = []
     for (let i = 0; i < numbers.length; i++) {
@@ -67,4 +67,31 @@ function filterNumbers(numbers, evenOrOdd) {
     return results;
 }
 
-console.log(filterNumbers([1, 2, 3, 4,], "even"))
+console.log(filterNumbers([1, 2, 3, 4,], "even")) */
+
+function getRandomNumber(min, max) {
+    let randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
+    return randomNumber;
+}
+
+alert('Welcome to the even/odd response time task.\n\n You are about to see a series of numbers. If the number you see is EVEN, type the letter "e". If the number you see is odd, type the letter "o". \n\nPlease answer as quickly and accurately as possible.')
+let results = []
+
+for (let i = 0; i < 5; i++) {
+    let num = getRandomNumber(1, 20);
+    let start = new Date().getTime();
+    let answer = prompt(`Is ${num} even or odd?`);
+    if ((answer === "e" && num % 2 === 0) || (answer === "o" && num % 2 !== 0)) {
+        correct = "correct"
+    } else (correct = "incorrect")
+    let end = new Date().getTime();
+    let responseTime = (end - start) / 1000;
+    results.push({
+        number: num,
+        response: answer,
+        correct: correct,
+        responseTime: responseTime
+    });
+}
+alert('Thank you for your time');
+console.log(results)
