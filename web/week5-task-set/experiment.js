@@ -17,25 +17,31 @@ let welcomeTrial = {
 };
 timeline.push(welcomeTrial)
 
+
 for (let condition of conditions) {
+    let choices = [condition.correctAnswer, condition.altNumber];
+    choices = jsPsych.randomization.shuffle(choices);
+    let correctIndex = choices.indexOf(condition.correctAnswer);
     let conditionTrial = {
-        type: jsPsychSurveyHtmlForm,
-        preamble: `<p>What is ${condition.num1} + ${condition.num2}?</p>`,
-        html: `<p><input type='text' name='response' id='response'></p>`,
-        autofocus: 'response',
-        button_label: 'Submit Answer',
+        type: jsPsychHtmlButtonResponse,
+        stimulus: `<p>What is ${condition.num1} + ${condition.num2}?</p>`,
+        choices: choices,
+
         data: {
             collect: true,
             number1: condition.num1,
             number2: condition.num2,
-            correctAnswer: condition.correctAnswer
+            correctAnswer: condition.correctAnswer,
+            altAnswer: condition.altNumber
         },
         on_finish: function (data) {
-            let userResponse = data.response.response;
-            if (userResponse == condition.correctAnswer) {
-                data.correct = true;
+            let userResponseIndex = data.response;
+            let userResponseValue = choices[userResponseIndex];
+            data.userResponse = userResponseValue;
+            if (userResponseValue == condition.correctAnswer) {
+                data.correct = true;  // Correct response
             } else {
-                data.correct = false;
+                data.correct = false;  // Incorrect response
             }
 
         }
@@ -57,7 +63,7 @@ let debriefTrial = {
         let data = jsPsych.data
             .get()
             .filter({ collect: true })
-            .ignore(['stimulus', 'trial_type', 'trial_index', 'plugin_version', 'collect'])
+            .ignore(['response', 'stimulus', 'trial_type', 'trial_index', 'plugin_version', 'collect'])
             .csv();
         console.log(data);
     }
