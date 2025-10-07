@@ -8,10 +8,10 @@ let timeline = [];
 let welcomeTrial = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: `
-        <h1> Welcome to the Math Response Task!</h1>
+        <h1 class='welcome'> Welcome to the Math Response Task!</h1>
         <p>In this experiment, you will be shown a series of math questions.</p>
         <p>Please answer as quickly and accurately as possible.</p>
-        <p>Press SPACE to begin.</p>
+        <p>Press <span class='key'>SPACE</span> to begin.</p>
     `,
     choices: [' '],
 };
@@ -23,20 +23,20 @@ for (let condition of conditions) {
     choices = jsPsych.randomization.shuffle(choices);
     let correctIndex = choices.indexOf(condition.correctAnswer);
     let conditionTrial = {
-        type: jsPsychHtmlButtonResponse,
-        stimulus: `<p>What is ${condition.num1} + ${condition.num2}?</p>`,
-        choices: choices,
+        type: jsPsychSurveyHtmlForm,
+        preamble: `<p class='equation'>What is <span class='num'>${condition.num1}</span> + 
+        <span class='num'>${condition.num2}</span>?</p>`,
+        html: `<p><input type='text' name='response' id='response'></p>`,
+        autofocus: 'response',
+        button_label: 'Submit Answer',
 
         data: {
             collect: true,
             number1: condition.num1,
             number2: condition.num2,
-            correctAnswer: condition.correctAnswer,
-            altAnswer: condition.altNumber
+            correctAnswer: condition.correctAnswer
         },
         on_finish: function (data) {
-            let userResponseIndex = data.response;
-            let userResponseValue = choices[userResponseIndex];
             data.userResponse = userResponseValue;
             if (userResponseValue == condition.correctAnswer) {
                 data.correct = true;  // Correct response
@@ -45,7 +45,6 @@ for (let condition of conditions) {
             }
 
         }
-
     }
     timeline.push(conditionTrial)
 }
@@ -63,7 +62,7 @@ let debriefTrial = {
         let data = jsPsych.data
             .get()
             .filter({ collect: true })
-            .ignore(['response', 'stimulus', 'trial_type', 'trial_index', 'plugin_version', 'collect'])
+            .ignore(['stimulus', 'trial_type', 'trial_index', 'plugin_version', 'collect'])
             .csv();
         console.log(data);
     }
