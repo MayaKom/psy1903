@@ -11,11 +11,41 @@ let welcomeTrial = {
         <h1 class='welcome'> Welcome to the Math Response Task!</h1>
         <p>In this experiment, you will be shown a series of math questions.</p>
         <p>Please answer as quickly and accurately as possible.</p>
+        <p>Before starting the task, we will ask you a couple of questions about yourself.</p>
         <p>Press <span class='key'>SPACE</span> to begin.</p>
     `,
     choices: [' '],
 };
 timeline.push(welcomeTrial)
+
+let likertQuestion = {
+    type: jsPsychSurveyLikert,
+    questions: [
+        {
+            prompt: 'I enjoy solving math problems.',
+            labels: [
+                "Strongly Disagree",
+                "Disagree",
+                "Neutral",
+                "Agree",
+                "Strongly Agree"
+            ]
+        },
+        {
+            prompt: 'I find math easy.',
+            labels: [
+                "Strongly Disagree",
+                "Disagree",
+                "Neutral",
+                "Agree",
+                "Strongly Agree"
+            ]
+        }
+    ]
+};
+
+timeline.push(likertQuestion)
+
 
 
 for (let condition of conditions) {
