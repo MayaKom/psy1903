@@ -60,7 +60,7 @@ let resultsTrial = {
         `,
     on_start: function () {
         //  ⭐ Update the following three values as appropriate ⭐
-        let prefix = 'response-time';
+        let prefix = 'mrt';
         let dataPipeExperimentId = 'your-experiment-id-here';
         let forceOSFSave = false;
 
@@ -100,6 +100,8 @@ let resultsTrial = {
         })
     }
 }
+
+
 timeline.push(resultsTrial);
 
 
