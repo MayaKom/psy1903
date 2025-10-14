@@ -7,7 +7,7 @@
 </head>
 
 <body>
-    <h1>Maya's PSY1903 Web Server</h1>
+    <h1>My PSY1903 Web Server</h1>
 
     <h2>Contents</h2>
     <ul id="directory-list"></ul>
@@ -39,16 +39,22 @@
                 }
             });
         }
-        fetch('/contents')
-            .then(response => response.json())
-            .then(data => {
-                const list = document.getElementById('directory-list');
-                list.innerHTML = '';
-                renderTree(data.files, '', list);
-            })
-            .catch(error => {
-                console.error('Error fetching directories:', error);
-            });
+
+        const list = document.getElementById('directory-list');
+
+        if (location.hostname.includes('localhost')) {
+            fetch('/contents')
+                .then(response => response.json())
+                .then(data => {
+                    list.innerHTML = '';
+                    renderTree(data.files, '', list);
+                })
+                .catch(error => {
+                    console.error('Error fetching directories:', error);
+                });
+        } else {
+            list.innerHTML = 'Directory listing not available on production.';
+        }
     </script>
 </body>
 
