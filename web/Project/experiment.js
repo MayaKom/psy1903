@@ -27,6 +27,8 @@ let enterFullScreenTrial = {
 
 timeline.push(enterFullScreenTrial);
 
+timeline.push(enterFullScreenTrial);
+
 let welcomeTrial = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: `
