@@ -33,7 +33,6 @@ let welcomeTrial = {
     <h1>Welcome to the Uncertainty Task!</h1> 
     <p>You will play a game in which you have to choose between a series of lotteries and a sure payout. The lottery consists of you guessing which color chip will be drawn from a bag that has blue and red chips in different proportions.</p>
     <p>The colored bars represent the shares of blue and red chips in the bag for each lottery. All decisions you make in the task could influence the amount of reward you get at the end of the study.</p>
-    <p>At the end of the task, one trial will be randomly picked: for example, if on that trial, you chose the sure outcome of $5, you will receive the $5, if you chose the lottery, we will play the lottery and you will receive the payout based on the outcome.</p>
     <p>When you are ready, press <span class='key'>SPACE</span> to begin.</p>
     `,
     choices: [' '],
@@ -95,8 +94,12 @@ let likert_scale = [
 
 let survey_instructions = {
     type: jsPsychHtmlKeyboardResponse,
-    stimulus: `Now you will answer a couple of questions about your attitude to uncertainty in your everyday life. Please be as honest as possible. There are no right or wrong answers. We only want to know what your general experience is.`
+    stimulus: `<p>Now you will answer a couple of questions about your attitude to uncertainty in your everyday life. Please be as honest as possible. There are no right or wrong answers. We only want to know what your general experience is.</p>
+    <p>When you're ready, press <span class='key'>SPACE</span> to begin.</p>`,
+    choices: [' ']
 }
+
+timeline.push(survey_instructions)
 
 let likert_questions = [
     { prompt: "Unforeseen events upset me greatly", name: "p1" },
@@ -119,6 +122,7 @@ let questions = likert_questions.map(q => ({
     labels: likert_scale,
     required: true
 }));
+
 
 let likertTrial = {
     type: jsPsychSurveyLikert,

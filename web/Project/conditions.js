@@ -35,7 +35,7 @@ let conditions = [
         <h1>Instructions</h1>
         <p>We have multiple bags with different proportions of blue and red chips. The colored bars represent the shares of blue and red chips in the bag.</p>
         <p>In this part of the task, you will not be able to see what the exact shares of blue and red chips are in the bag. A gray bar will occlude some portion of the bar.</p>
-        <p>Remember, all decisions you make in the task could influence the amount of reward you get at the end of the study. At the end of the task, one trial will be randomly picked and your reward will depend on your choice in that trial.</p>
+        <p>Remember, all decisions you make in the task could influence the amount of reward you get at the end of the study.</p>
         <p>When you are ready, press <span class='key'>SPACE</span> to begin.</>
     `,
         stimuli: [
