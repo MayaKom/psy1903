@@ -6,12 +6,10 @@ let conditions = [
         title: 'uncertainBlock',
         instructions: `
         <h1>Instructions</h1>
-        <p>You will play a game in which you have to choose between a lottery and a sure payout.</p>
-        <p>All decisions you make in the task could influence the amount of reward you get at the end of the study.</p>
-        <p>We have multiple bags with different proportions of blue and red chips. The colored bars represent the shares of blue and red chips in the bag.</p>
-        <p>At the end of the task, one trial will be randomly picked: for example, if on that trial, you chose the sure outcome of $5, you will receive the $5, </p>
-        <p>if you chose the lottery, we will play the lottery and receive the payout based on the outcome.</p>
-        <p>When you are ready, press [SPACE] to begin.</p>
+        <p>In this part of the task, you will see a series of colored bars which represent the proportion of blue and red chips in a</p>
+        <p>bag. Next to the red bar you will see the winning amount if a red chip is drawn. You can choose between playing the lottery</p>
+        <p>and a sure payout of $5. Remember, all decisions you make in the task could influence the amount of reward you get at the end of the study.</p>
+        <p>When you are ready, press <span class='key'>SPACE</span> to begin.</p>
         `,
         stimuli: [
             { image: 'img/unc/unc-75-5.png' },
@@ -35,11 +33,10 @@ let conditions = [
         title: 'ambiguousBlock',
         instructions: `
         <h1>Instructions</h1>
-        <p>You will play a game in which you have to choose between a lottery and a sure payout. All decisions you make in the task could influence the amount of reward you get at the end of the study.</p>
         <p>We have multiple bags with different proportions of blue and red chips. The colored bars represent the shares of blue and red chips in the bag.</p>
-        <p>You will not be able to see what the exact shares of blue and red chips are.</p>
-        <p>At the end of the task, one trial will be randomly picked: for example, if on that trial, you chose the sure outcome of $5, you will receive the $5, if you chose the lottery, we will play the lottery and receive the payout based on the outcome.</p>
-        <p>When you are ready, press [SPACE] to begin.</>
+        <p>In this part of the task, you will not be able to see what the exact shares of blue and red chips are in the bag. A gray bar will occlude some portion of the bar.</p>
+        <p>Remember, all decisions you make in the task could influence the amount of reward you get at the end of the study. At the end of the task, one trial will be randomly picked and your reward will depend on your choice in that trial.</p>
+        <p>When you are ready, press <span class='key'>SPACE</span> to begin.</>
     `,
         stimuli: [
             { image: 'img/amb/amb-74-5.png' },

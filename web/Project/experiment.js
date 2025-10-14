@@ -2,14 +2,39 @@ let jsPsych = initJsPsych();
 
 let timeline = []
 
-// Welcome & consent trial
-// NEED TO DO - mention you will recieve two games/instructions
+// consent trial
+
+let consentTrial = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: `
+    <h1>Welcome</h1> 
+
+    <p>The experiment you are about to complete is an educational exercise designed for PSY 1903: Programming for Psychological Scientists</em>; it is not intended as a true scientific experiment.</p>
+    <p>No identifying information will be collected, data will not be shared beyond our class, and your participation is completely voluntary.</p>
+    <p>If you have any questions, please reach out to Dr. Garth Coombs (garthcoombs@fas.harvard.edu), one of the head instructors of PSY 1903.</p>
+    <p>If you agree to participate, press <span class='key'>SPACE</span> to continue.</>
+    `,
+
+    // Listen for the SPACE key to be pressed to proceed
+    choices: [' '],
+};
+timeline.push(consentTrial);
+
+let enterFullScreenTrial = {
+    type: jsPsychFullscreen,
+    fullscreen_mode: true
+};
+
+timeline.push(enterFullScreenTrial);
 
 let welcomeTrial = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: `
     <h1>Welcome to the Uncertainty Task!</h1> 
-    <p>In this experiment ... </p>
+    <p>You will play a game in which you have to choose between a series of lotteries and a sure payout. The lottery consists of you guessing which color chip will be drawn from a bag that has blue and red chips in different proportions.</p>
+    <p>The colored bars represent the shares of blue and red chips in the bag for each lottery. All decisions you make in the task could influence the amount of reward you get at the end of the study.</p>
+    <p>At the end of the task, one trial will be randomly picked: for example, if on that trial, you chose the sure outcome of $5, you will receive the $5, if you chose the lottery, we will play the lottery and you will receive the payout based on the outcome.</p>
+    <p>When you are ready, press <span class='key'>SPACE</span> to begin.</p>
     `,
     choices: [' '],
 };
@@ -68,6 +93,11 @@ let likert_scale = [
     "Strongly Agree"
 ];
 
+let survey_instructions = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: `Now you will answer a couple of questions about your attitude to uncertainty in your everyday life. Please be as honest as possible. There are no right or wrong answers. We only want to know what your general experience is.`
+}
+
 let likert_questions = [
     { prompt: "Unforeseen events upset me greatly", name: "p1" },
     { prompt: "It frustrates me not having all the information I need", name: "p2" },
@@ -83,17 +113,13 @@ let likert_questions = [
     { prompt: "I must get away from all uncertain situations", name: "I5" }
 ];
 
-let questions = []
+let questions = likert_questions.map(q => ({
+    prompt: q.prompt,
+    name: q.name,
+    labels: likert_scale,
+    required: true
+}));
 
-for (let q of likert_questions) {
-    questions.push({
-        prompt: q.prompt,
-        name: q.name,
-        labels: likert_scale,
-        required: true
-    }
-    )
-}
 let likertTrial = {
     type: jsPsychSurveyLikert,
     questions: questions,
@@ -101,8 +127,7 @@ let likertTrial = {
     data: {
         collect: true
     }
-
-};
+}
 
 
 timeline.push(likertTrial);
@@ -127,7 +152,7 @@ let resultsTrial = {
         let results = jsPsych.data
             .get()
             .filter({ collect: true })
-            .ignore(['stimulus', 'plugin_version', 'collect'])
+            .ignore(['stimulus', 'trial_type', 'plugin_version', 'collect'])
             .csv();
 
         // Generate a participant ID based on the current timestamp
@@ -161,6 +186,12 @@ let resultsTrial = {
 }
 
 timeline.push(resultsTrial);
+
+let exitFullScreenTrial = {
+    type: jsPsychFullscreen,
+    fullscreen_mode: false
+};
+timeline.push(exitFullScreenTrial);
 
 let debriefTrial = {
     type: jsPsychHtmlKeyboardResponse,
