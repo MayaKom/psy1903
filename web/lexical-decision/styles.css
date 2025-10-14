@@ -50,3 +50,7 @@
         transform: rotate(360deg);
     }
 }
+
+.incorrectFeedback {
+    color: red;
+}
