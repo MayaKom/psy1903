@@ -27,8 +27,6 @@ let enterFullScreenTrial = {
 
 timeline.push(enterFullScreenTrial);
 
-timeline.push(enterFullScreenTrial);
-
 let welcomeTrial = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: `
@@ -96,8 +94,9 @@ let likert_scale = [
 
 let survey_instructions = {
     type: jsPsychHtmlKeyboardResponse,
-    stimulus: `<p>Now you will answer a couple of questions about your attitude to uncertainty in your everyday life. Please be as honest as possible. There are no right or wrong answers. We only want to know what your general experience is.</p>
-    <p>When you're ready, press <span class='key'>SPACE</span> to begin.</p>`,
+    stimulus: `<p>For the final task, you will view a series of statements.</p>
+    <p>Please read each of the statements and indicate how much you personally agree or disagree with them.</p>
+    <p>Press <span class='key'>SPACE</span> to proceed.`,
     choices: [' ']
 }
 

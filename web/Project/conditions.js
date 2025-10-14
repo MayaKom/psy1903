@@ -6,9 +6,9 @@ let conditions = [
         title: 'uncertainBlock',
         instructions: `
         <h1>Instructions</h1>
-        <p>In this part of the task, you will see a series of colored bars which represent the proportion of blue and red chips in a</p>
-        <p>bag. Next to the red bar you will see the winning amount if a red chip is drawn. You can choose between playing the lottery</p>
-        <p>and a sure payout of $5. Remember, all decisions you make in the task could influence the amount of reward you get at the end of the study.</p>
+        <p>We have multiple bags which contain different proportions of blue and red chips. You will be shown colored bars that represent the shares of blue and red chips in the bag.</p>
+        <p>You will play a game for hypothetical monetary reward. For each bag of chips, you can decide to lottery (pick a random chip) or take a safe bet (ensured $5 reward). Blue chips will result in $0, and red chip values will change per bag.</p>
+        <p>In this part of the task, <span class='manipulation'>you will see the exact shares of blue and red chips</span> in the bag.</p>
         <p>When you are ready, press <span class='key'>SPACE</span> to begin.</p>
         `,
         stimuli: [
@@ -33,10 +33,10 @@ let conditions = [
         title: 'ambiguousBlock',
         instructions: `
         <h1>Instructions</h1>
-        <p>We have multiple bags with different proportions of blue and red chips. The colored bars represent the shares of blue and red chips in the bag.</p>
-        <p>In this part of the task, you will not be able to see what the exact shares of blue and red chips are in the bag. A gray bar will occlude some portion of the bar.</p>
-        <p>Remember, all decisions you make in the task could influence the amount of reward you get at the end of the study.</p>
-        <p>When you are ready, press <span class='key'>SPACE</span> to begin.</>
+        <p>We have multiple bags which contain different proportions of blue and red chips. You will be shown colored bars that represent the shares of blue and red chips in the bag.</p>
+        <p>You will play a game for hypothetical monetary reward. For each bag of chips, you can decide to lottery (pick a random chip) or take a safe bet (ensured $5 reward). Blue chips will result in $0, and red chip values will change per bag.</p>
+        <p>In this part of the task, you will not see the exact shares of blue and red chips in the bag. A gray bar will occlude some portion of the bar.</p>
+        <p>When you are ready, press <span class='key'>SPACE</span> to begin</p>
     `,
         stimuli: [
             { image: 'img/amb/amb-74-5.png' },
