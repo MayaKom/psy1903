@@ -66,7 +66,7 @@ for (let block of randomizedBlocks) {
         let choices = jsPsych.randomization.shuffle(["Lottery: draw a chip", "$5"]);
         let conditionTrial = {
             type: jsPsychHtmlButtonResponse,
-            stimulus: `<img src=${stimulus.image} width="600">`,
+            stimulus: `<img src=${stimulus.image} width="800">`,
             choices: choices,
             data: {
                 collect: true,
