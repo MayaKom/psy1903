@@ -50,7 +50,7 @@ let conditions = [
         practiceTrial: `
         <h1>Practice</h1>
         <p>Before beginning playing, let's first practice the game</p>    
-        <p>In this trial what is the share of red chips in the bag?</p>
+        <p>In this trial what is the exact share of red chips in the bag?</p>
         <p><img src="img/amb/amb-24-8.png" width="600"></p>
             `,
         practiceChoices: ["Not shown", "38", "20"],
