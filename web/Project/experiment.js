@@ -64,7 +64,6 @@ for (let block of randomizedBlocks) {
         data: { task: 'compCheck' },
         on_finish: function (data) {
             let choice_label = block.practiceChoices[data.response];
-            // Compare it to the correct answer string
             data.correct = (choice_label == block.practiceCorrect);
         }
     };
@@ -82,15 +81,13 @@ for (let block of randomizedBlocks) {
         },
         choices: ["continue"],
         on_finish: function (data) {
-            let last_trial = jsPsych.data.get().last(2).values()[0]; // check the trial before feedback
+            let last_trial = jsPsych.data.get().last(2).values()[0];
             if (!last_trial.correct) {
                 jsPsych.timelineVariable('repeat', true);
             }
         }
     };
 
-
-    // Now we make a loop that repeats until they get it right
 
     let compCheckLoop = {
         timeline: [compCheckTrial, feedback],
