@@ -31,8 +31,11 @@ let welcomeTrial = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: `
     <h1>Welcome to the Uncertainty Task!</h1> 
-    <p>You will play a game in which you have to choose between a series of lotteries and a sure payout. The lottery consists of you guessing which color chip will be drawn from a bag that has blue and red chips in different proportions.</p>
-    <p>The colored bars represent the shares of blue and red chips in the bag for each lottery. All decisions you make in the task could influence the amount of reward you get at the end of the study.</p>
+    <p>In this game, you will make a series of choices between a lottery and a sure payout. Each lottery involves guessing which color chip (blue or red) will be drawn from a bag containing both colors in varying proportions.</p>
+    <p><img src='img/bag.png'width="100"></p>
+    <p>Colored bars on the screen show how much of each color is in the bag for that round. Example:</p>
+    <p><img src='img/practice-50.png'width="600"></p>
+    <p>Your decisions may affect the amount of reward you receive at the end of the study.</p>
     <p>When you are ready, press <span class='key'>SPACE</span> to begin.</p>
     `,
     choices: [' '],
@@ -42,16 +45,66 @@ let welcomeTrial = {
 timeline.push(welcomeTrial);
 
 
-
 let randomizedBlocks = jsPsych.randomization.shuffle(conditions);
 
 
 for (let block of randomizedBlocks) {
     let instructionsTrial = {
         type: jsPsychHtmlKeyboardResponse,
-        stimulus: block.instructions
+        stimulus: block.instructions,
+        choices: [' ']
     };
     timeline.push(instructionsTrial);
+
+
+    let compCheckTrial = {
+        type: jsPsychHtmlButtonResponse,
+        stimulus: block.practiceTrial,
+        choices: block.practiceChoices,
+        data: { task: 'compCheck' },
+        on_finish: function (data) {
+            let choice_label = block.practiceChoices[data.response];
+            // Compare it to the correct answer string
+            data.correct = (choice_label == block.practiceCorrect);
+        }
+    };
+
+
+    let feedback = {
+        type: jsPsychHtmlButtonResponse,
+        stimulus: function () {
+            let last_trial = jsPsych.data.get().last(1).values()[0];
+            if (!last_trial.correct) {
+                return "<p style='color:red;'>Try again! What is the share of red chips?</p>";
+            } else {
+                return "<p style='color:green;'>Correct!</p>";
+            }
+        },
+        choices: ["continue"],
+        on_finish: function (data) {
+            let last_trial = jsPsych.data.get().last(2).values()[0]; // check the trial before feedback
+            if (!last_trial.correct) {
+                jsPsych.timelineVariable('repeat', true);
+            }
+        }
+    };
+
+
+    // Now we make a loop that repeats until they get it right
+
+    let compCheckLoop = {
+        timeline: [compCheckTrial, feedback],
+        loop_function: function () {
+            let last_trial = jsPsych.data.get().last(2).values()[0];
+            return !last_trial.correct; // repeats until correct
+        }
+    };
+
+    timeline.push(compCheckLoop);
+
+
+
+
 
     let randomizedStimuli = jsPsych.randomization.shuffle(block.stimuli);
     for (let stimulus of randomizedStimuli) {
@@ -63,7 +116,7 @@ for (let block of randomizedBlocks) {
             choices: "NO_KEYS"
         };
         timeline.push(fixationTrial);
-        let choices = jsPsych.randomization.shuffle(["Lottery: draw a chip", "$5"]);
+        let choices = jsPsych.randomization.shuffle(["Draw a chip", "Take the $5"]);
         let conditionTrial = {
             type: jsPsychHtmlButtonResponse,
             stimulus: `<img src=${stimulus.image} width="800">`,
@@ -79,7 +132,7 @@ for (let block of randomizedBlocks) {
         };
 
         timeline.push(conditionTrial);
-    }
+    };
 }
 
 // Likert survey trial
@@ -210,4 +263,4 @@ let debriefTrial = {
 timeline.push(debriefTrial);
 
 
-jsPsych.run(timeline)
+jsPsych.run(timeline);
