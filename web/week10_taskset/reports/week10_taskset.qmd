@@ -68,6 +68,74 @@ rt_class(rt, 500)
 
 ### Q3: Loops vs. Vectorization -------------------------
 ```{r}
+# Creating an age column with a for loop
 experiment_data$age <- NA
+for (i in 1:nrow(experiment_data)) {
+  experiment_data$age[i] <- getRandomNumber(18,65, 1)
+}
+head(experiment_data)
 
+# Creating the column with vectorization
+experiment_data$age <- sample(18:65, size=nrow(experiment_data), 
+                              replace = TRUE)
+head(experiment_data)
+```
+### Q4: Control Structures on Data Frames ---------------------------
+```{r}
+# Creating an RT categorization using for loop
+experiment_data$rt_category <- NA
+for (i in 1:nrow(experiment_data)) {
+  rt_class(experiment_data$rt[i],500) -> experiment_data$rt_category[i]
+}
+
+# Creating an RT categorization using vectorization
+experiment_data$rt_category_vec <- NA
+experiment_data$rt_category_vec <- rt_class(experiment_data$rt, 500)
+
+# Comparing the two
+table(loop = experiment_data$rt_category,
+      vec  = experiment_data$rt_category_vec,
+      useNA = "ifany")
+```
+### Q5: Debugging Functions -----------------------------
+```{r}
+## Create Buggy Function
+threshold <- 500
+
+flag_fast <- function(rt_vector, threshold=500) {
+  rt_vector < threshold
+}
+flag_fast(experiment_data$rt)
+rm(threshold)
+
+```
+### Q6: Debugging Tools in Action -----------------------------
+```{r}
+subject_means <- tapply(experiment_data$rt,
+                        experiment_data$condition,
+                        mean, na.rm=TRUE)
+print(paste("Mean for control:", subject_means["control"]))
+print(paste("Mean for incongruent:", subject_means["incongruent"]))
+# How many NAs overall?
+sum(is.na(experiment_data$rt))
+
+# How many NAs by condition?
+tapply(is.na(experiment_data$rt), experiment_data$condition, sum)
+
+# Optional: quick sanity checks
+summary(experiment_data$rt)
+with(experiment_data, table(condition, is.na(rt)))
+```
+
+### Q7: Using AI for Debugging or Refactoring --------------------
+AI was useful in diagnosing the key issue - that my code didn't include
+a range for the for loop function, it only included a single value because
+nrow() produces the total number of rows.
+
+### Q8: Saving and Reloading Objects -----------------------------
+```{r}
+write.csv(experiment_data, file="/Users/mayak/Desktop/psy1903/web/week10_taskset/data/cleaned/experiment_data.csv")
+saveRDS(experiment_data, file="/Users/mayak/Desktop/psy1903/web/week10_taskset/data/cleaned/experiment_data.rds")
+save(experiment_data, subject_means, file = "objects.RData")
+rm(list = ls())
 ```
