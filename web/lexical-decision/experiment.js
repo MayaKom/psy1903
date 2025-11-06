@@ -40,6 +40,7 @@ let ageCheckTrial = {
         }
     }
 }
+
 timeline.push(ageCheckTrial);
 
 let enterFullScreenTrial = {
@@ -61,6 +62,7 @@ let welcomeTrial = {
 `,
     choices: [' '],
 };
+
 timeline.push(welcomeTrial)
 
 
@@ -220,3 +222,4 @@ function getRandomNumber(min, max) {
     let randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
     return randomNumber;
 }
+
