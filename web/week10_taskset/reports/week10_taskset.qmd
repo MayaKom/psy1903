@@ -1,0 +1,37 @@
+---
+title: "Week 10 Problem Set"
+author: "Maya Komakhidze"
+format: html
+execute:
+  echo: true
+  warning: true
+  message: true
+---
+
+# Generate dataset reproducibly
+set.seed(1903)
+subject_id <- 1:40
+rt <- round(rnorm(40, mean = 520, sd = 120))
+rt[sample(1:40, 2)] <- NA
+congruent <- sample(c(TRUE, FALSE), 40, replace = TRUE)
+condition <- sample(c("control", "incongruent"), 40, replace = TRUE)
+experiment_data <- data.frame(subject_id, rt, congruent, condition)
+
+# Save for reuse in later tasks
+saveRDS(experiment_data, file = "data/raw/experiment_data.rds")
+
+rm(list = ls())
+
+#### Q1: Load and Inspect Data ------------------------------------
+
+```{r}
+## Load the saved dataset
+experiment_data <- readRDS("../data/raw/experiment_data.rds")
+
+## Take a quick look at the first few rows
+head(experiment_data)
+
+## Check the structure of the dataset
+str(experiment_data)
+
+```
