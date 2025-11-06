@@ -58,7 +58,16 @@ rt_class <- function(rt, threshold) {
   is.na(rt), "unknown",
   ifelse(rt<500, "fast", "slow")
   )
+  return(category)
 }
+rt <- c(1, 501, 100, NA)
 
-  
+rt_class(rt, 500)  
+
+```
+
+### Q3: Loops vs. Vectorization -------------------------
+```{r}
+experiment_data$age <- NA
+
 ```
