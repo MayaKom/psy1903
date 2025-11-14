@@ -1,0 +1,54 @@
+---
+title: "Week 11 Taskset"
+author: "Maya Komakhidze"
+format: html
+execute:
+  echo: true
+  warning: true
+  message: false
+---
+#### Introduction -------------------------------
+I created 4 script files for 1. scoring likert items, 2. Replacing missing values that were present in the dataset by mistake, 3. summarizing participants RTs based on their accuracy, and finally 4. in one script I combined all other functions created in the other scripts to process each participant's data files sequentially. 
+Handling missing data this way allowed me to recover valueable information and distinguishing truly missing values (participant did not give a response) from recoverable RTs.
+
+
+#### Concept Check -------------------------------
++ Q2.1: What does source("scripts/score_questionnaire.R") enable in your workflow?
+    + it runs the code from the r script file called score_questionnaire.R and scores likert-type questions - extracts the question and responses from the json objects, reverses the reverse-coded items, and stores them as a dataframe.
++ Q2.2: Why is modularizing your code into multiple scripts considered a best practice?
+    + It makes the code easily interpretable and adaptable based on changes.
++ Q2.3: What information does traceback() provide after an error?
+    + It tells us where the code couldn't be run exactly
++ Q2.4: When you read multiple .csv files into R, how can using str() or names() before combining them help you prevent or debug errors later in your workflow?
+    + rbind simply attaches dataframes to each other so if the columns are not aligned, the dataset will be unusable.
++ Q2.5: When you run source("scripts/process_participant.R") inside your Quarto document, nothing prints in the Console.How can you check whether your function actually loaded correctly into your environment, and why is this step important before calling it in later code?
+    + The functions will appear in the global environment if they loaded correctly. They will also be displayed in response to a call ls() and objects()
+...
+
+### Q6.3
+We filter out unrealistic RTs, those that are lower than 300 or higher than 900 because they indicate that the participants was not engaging with the task as planned - either they were distracted or answering without paying attention to the instruction.
+#### Load functions ------------------------------------------------------------
+```{r}
+if (!require("pacman")) {install.packages("pacman"); require("pacman")}
+p_load("jsonlite", "ggplot2", "here")
+
+source(here::here("scripts", "score_questionnaire.R"))
+source(here::here("scripts", "summarize_behavior.R"))
+source(here::here("scripts", "process_participant.R"))
+source(here::here("scripts", "compute_rt_if_missing.R"))
+```
+
+```{r}
+file_list <- list.files(here("data/raw"), pattern = "^est-experiment-.*\\.csv$", full.names = FALSE)
+participant_rows <- lapply(file_list, process_participant)
+study_level <- do.call(rbind, participant_rows)
+names(participant_rows[[1]])
+names(participant_rows[[2]])
+```
+
+```{r}
+knitr::kable(study_level)
+```
+
+The mean RT across the study is `r round(mean(study_level$mean_rt_correct, na.rm = TRUE),2)` ms, and the mean accuracy is `r round(mean(study_level$mean_accuracy, na.rm = TRUE),2)`.
+
