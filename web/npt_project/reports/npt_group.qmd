@@ -1,0 +1,53 @@
+---
+title: "Grouping and Summarizing Across Participants"
+format: html
+execute:
+  echo: true
+  warning: true
+  message: false
+---
+
+#### Load and Inspect Group Level Data Data
+```{r}
+# Load here::here robustly
+if (!require(here)) install.packages("here")
+library(here)
+
+# Load the study-level dataset built in our previous workflow
+study_level <- read.csv(here("data/cleaned/study_level.csv"))
+
+# Quick inspection
+head(study_level)
+str(study_level)
+summary(study_level)
+```
+
+```{r}
+## Replace Column Names
+names(study_level) <- c("subject_id", "tef10_score", "practice_mean_rt", "practice_acc", "magnitude_mean_rt", "magnitude_acc", "parity_mean_rt", "parity_acc", "practice_sd_rt", "magnitude_sd_rt", "parity_sd_rt")
+write.csv(study_level, here::here("data/cleaned/study_level.csv"), row.names = FALSE)
+```
+
+#### Calculate Difference Scores
+```{r}
+# A) Reaction time difference (complete this line together)
+# hint: subtract magnitude mean RT from parity mean RT
+study_level$rt_diff <- study_level$parity_mean_rt - study_level$magnitude_mean_rt
+
+# B) Accuracy difference (complete together)
+study_level$acc_diff <- study_level$parity_acc - study_level$magnitude_acc
+
+# C) Overall averages across conditions
+study_level$mean_rt_overall  <- rowMeans(
+  study_level[, c("magnitude_mean_rt", "parity_mean_rt")],
+  na.rm = TRUE
+)
+study_level$mean_acc_overall <- rowMeans(
+  study_level[, c("magnitude_acc", "parity_acc")],
+  na.rm = TRUE
+)
+
+# Peek at the new columns
+head(study_level[, c("subject_id", "rt_diff", "acc_diff",
+                     "mean_rt_overall", "mean_acc_overall")])
+```

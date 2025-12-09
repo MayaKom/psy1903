@@ -1,0 +1,61 @@
+---
+title: "Processing Individual Participant"
+author: "Maya Komakhidze"
+format: html
+execute:
+  echo: true
+  warning: true
+  message: false
+---
+
+This report documents how we import and process each participant’s raw data file, summarize it using our functions, and combine the results into a single study-level dataset.
+
+#### Load packages ------------------------------------------------------------
+```{r}
+if (!require("pacman")) {install.packages("pacman"); require("pacman")}
+p_load("jsonlite", "ggplot2", "here")
+```
+
+#### Load functions ------------------------------------------------------------
+```{r}
+source(here::here("scripts", "score_questionnaire.R"))
+source(here::here("scripts", "summarize_behavior.R"))
+source(here::here("scripts", "process_participant.R"))
+```
+
+#### 1) Find files -------------------------------------------------------------
+```{r}
+# Prefer a pattern to avoid accidentally pulling other CSVs
+# Prefer a pattern to avoid accidentally pulling other CSVs
+file_list <- list.files(
+  here::here("data", "raw"),
+  pattern = "^npt-experiment-.*\\.csv$",
+  full.names = FALSE
+)
+```
+
+#### 2) Apply our participant processor ---------------------------------------
+```{r}
+participant_rows <- lapply(file_list, process_participant)
+```
+
+#### 3) Combine into one study-level data frame --------------------------------
+```{r}
+study_level <- do.call(rbind, participant_rows)
+```
+
+#### 4) Save combined outputs --------------------------------------------------
+```{r}
+dir.create(here("data","cleaned"), recursive = TRUE, showWarnings = FALSE)
+write.csv(study_level, 
+          here("data","cleaned","study_level.csv"), 
+          row.names = FALSE)
+saveRDS(study_level, here("data", "cleaned", "study_level.rds"))
+```
+
+#### 5) Quick sanity check -----------------------------------------------------
+```{r}
+stopifnot(nrow(study_level) == length(file_list))
+head(study_level)
+```
+
