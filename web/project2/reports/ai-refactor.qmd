@@ -1,0 +1,93 @@
+---
+title: "ai-factor"
+format: html
+---
+# Issues I found in the files
+Beyond the bug fixes that prevented the code from running, I made the following changes in he summarize behavior file:
+1. Removed the below if condition because the function already checks if a variable is logical.
+```{r}
+#if (!is.logical(data$correct)) { 
+#  data$correct <- normalize_logical(data$correct)
+#  } 
+```
+
+2. For filtering out trials where RT was outside of the threshold range I changed the indexing based on column numbers with named columns
+3. I changed hard-coded values to the variables specified in the function
+
+
+# AI suggestions on unmodified files:
+## 1. Use vectorized operations instead of small loops
+## 2. Inside loops that build participant-level summaries, create an empty list or data frame and fill by index rather than repeated rbind()
+This suggestion relates to the function
+```{r}
+#for (i in seq_along(files)) {
+#    file_name <- files[i]
+#    rows[[i]] <- import_and_process(file_name)
+#  }
+
+#  out  <- do.call(rbind, rows)
+```
+
+## 3. Replace sapply() with vapply() for type stability and speed
+If any block is empty, sapply() returns weird shapes. vapply() is safer and faster:
+
+```{r}
+# means <- sapply(split(df$RT, df$block), mean)
+
+# means <- vapply(split(df$RT, df$block), mean, numeric(1))
+```
+
+# AI suggestions on refactored files:
+
+## 1. Too much logic is spread across multiple scripts with partial duplication
+
+Examples:
+
+import_and_process.R performs trial filtering and summary calculations
+
+calculate_iat_dscore.R performs its own filtering and standardization
+
+summarize_behavior.R has yet another set of filtering + mean operations
+
+This means that “what counts as a valid trial” or “how accuracy is calculated” is encoded in three places.
+
+Improvement
+Create one central task-processing module with reusable helpers:
+```{r}
+# process_trials()
+# block_summary()
+# trim_rt()
+# compute_accuracy()
+```
+Then every script calls the same utilities instead of implementing its own version.
+
+## 2. summarize_behavior.R and build_participant_wide.R these two scripts show the most obvious remaining redundancy.
+
+Improvement opportunities:
+A. They duplicate summary logic from the main import script
+
+General pattern:
+
+compute mean RTs
+compute accuracy
+assemble a summary frame
+
+But these exist in two scripts with slightly different implementations.
+
+Centralize into:
+
+summarize_trials(df)
+
+Then every script uses the same function, eliminating drift.
+## 3. Validate all required columns early and simply
+
+```{r}
+# required <- c("block","RT","correct")
+# missing <- setdiff(required, names(df))
+
+# if (length(missing) > 0)
+#    stop("Missing columns in IAT data: ", paste(missing, collapse=", "))
+```
+
+# Comparison between AI and me
+AI also suggested replacing for loops with vectorized operations but other suggestions were more high-level - like concentrating functions in the same file and reducing the number of temporary dataframes to increase efficiency.

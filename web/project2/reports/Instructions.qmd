@@ -1,0 +1,354 @@
+---
+title: "Project 2 — Instructions"
+author: "Garth Coombs & Susan Buck"
+format: html
+execute:
+  echo: true
+  warning: true
+  message: true
+---
+
+# Please read carefully:
+
+
+## Background and Goals
+
+You have just joined a research team, and one of your collaborators is developing a new Implicit Association Test (IAT) to measure students’ school anxiety. The idea is that students who experience higher levels of school anxiety will respond more quickly when school-related words are paired with anxiety-related words, compared to when those same school words are paired with serenity-related words The comparison condition in this project is an association between nature-related words and serenity-related words, which should be easier and yield faster responses for most participants. This means that congruent blocks pair nature/serenity together and school/anxiety together. Incongruent blocks mix the pairings in the opposite direction.
+
+The primary outcome measure in this type of task is the D-score, a single number that summarizes the strength of the implicit association. It is calculated by taking the difference between a participant’s mean reaction times in the incongruent and congruent blocks and dividing that difference by the pooled standard deviation of their responses. This is done for correct trials only, and after reaction times that are too fast or too slow have been removed. Larger positive D-scores indicate a stronger implicit association between school and anxiety (and nature-sereneity) compared to the opposite (school-serenity, nature-anxiety).
+
+Your colleague has put together a bunch of code for the project but it’s full of issues and they’ve asked you to help them debug it. Their code work flow is the following.
+
+## Task 1: Debugging
+
+### A. Using AI for initial debugging:
+
+Please first try to debug independently without the use of AI. The code has hints to guide you to the bugs, you can reuse code from previous work, and we are available to help. 
+
+If you get particularly stuck and need to turn to AI, please use it in a very targeted manner to begin. Try prompts like "I am getting this error in R [ERROR]. What are the top 3-5 reasons this error is given?" That way it is primarily guiding you to the reason for the error without providing solution code. 
+
+Later, you will later be comparing your manual debugging and refactoring to AI debugging and refactoring, so you don't want too much AI influence in the initial debugging.
+
+
+### B. Raw data files:
+
+Their data is stored in `data/raw`. There are 60 participant files, and it’s worth skimming one or two to get a sense of the structure before you begin. Each file contains 177 rows (one per trial) and the following variables:
+
++ **trialType**: either "iat" or "Questionnaire", indicating which part of the study the row corresponds to.
++ **block**: 
+  + **practice** blocks showed only one category at a time (nature or school | serenity or anxiety)
+  + **test** blocks showed all word categories in either congruent pairings (nature or serenity | school or anxiety) or incongruent pairings (nature or anxiety | school or serenity).
++ **rt**: reaction time to categorize the word.
++ **response**: the participant’s key press (`f` for left, `j` for right).
++ **trial_index**: the running trial count across the entire task (1–177).
++ **time_elapsed**: unused for this project; can ignore.
++ **word**: the stimulus word shown on screen.
++ **expectedCategory**: the conceptually correct answer (a single category for that word)
++ **expectedCategoryAsDisplayed**: reflects how the answer options were displayed visually on the screen during that trial to indicate which response button (left/right) was associated with which categories.
++ **leftCategory** / **rightCategory**: which category or category pair appeared on the left (`f`) and right (`j`) sides.
++ **correct**: whether the response was correct (1), incorrect (0), or missing (NA).
++ **question_order**: the order the questionnaire items were shown; unneeded for this study (always the same order)
+
+**You should not edit the raw data files.**
+
+### C. Individual participant file level:
+
++ `import_and_process.R` reads in one participant’s raw CSV file and prepares it for combining with other participants’ data. It extracts a `subject_id` from the file name, checks that all expected columns are present, and then calls two other scripts for additional processing:
+  + `score_questionnaire.R` takes a single JSON string of questionnaire responses, reverse-scores the relevant items, and returns a single questionnaire score reflecting that participant’s general anxiety level.
+  + `summarize_behavior.R` ensures variables are the correct data types, filters and groups the IAT trials, and calculates mean accuracy and reaction times for congruent and incongruent blocks. It also calls a third script:
+    + `calculate_iat_dscore.R` computes a single D-score for that participant by taking the difference between mean reaction times in the incongruent and congruent blocks and dividing that difference by the pooled standard deviation of the correct trials.
+  + `summarize_behavior.R` then bundles the participant’s mean RTs, accuracy values, and D-score into a one-row data frame and returns it to `import_and_process.R`.
++ Once `import_and_process.R` has both the questionnaire score and the behavioral summary, it combines them into a single-row data frame and saves that file to the `data/cleaned/participants/` directory and outputs the single-row data frame to the console or to a wrapper function like `build_participant_wide()`.
+
+Together, these scripts take a participant’s raw 177-row trial file and turn it into a single tidy row containing subject_id, anxiety score, mean RTs, accuracy values, and D-score.
+
+```pgsql
+[1] Raw Participant File (177 rows)
+        |
+        v
+ import_and_process.R
+   - extract subject_id
+   - split questionnaire + IAT trials
+   - call scoring and behavior scripts
+        |
+        v
+[2] score_questionnaire.R
+   - parse JSON
+   - reverse score items
+   - compute anxiety score
+        |
+        v
+[3] summarize_behavior.R
+   - clean data types
+   - filter valid IAT trials
+   - compute mean RTs + accuracy
+   - call calculate_iat_dscore.R
+        |
+        v
+ calculate_iat_dscore.R
+   - compute D-score
+        |
+        v
+[4] 1-row participant summary
+   - saved to data/cleaned/participants/
+   - returned to build_participant_wide()
+```
+
+### D. Combining individual participant files:
+
++ `build_participant_wide.R` reads all raw `.csv` files in the `data/raw` directory that follow the expected filename pattern (e.g., `sub-###-practiceOrder-testOrder.csv`). It loops through these files, processes each one with `import_and_process()`, collects all single-row outputs into a list, and then converts that list into a study-level data frame representing all participants.
+
++ `project2.qmd`, the Quarto report, sources and runs all of the functions described above. After generating the study-level data, it:
+  1. Performs several sanity checks to catch errors from earlier steps.  
+  2. Calculates and reports study-level means and standard errors.  
+  3. Computes basic inferential statistics (paired t-tests and a correlation).  
+  4. Visualizes the results using bar plots, histograms, and a correlation plot.
+
+### E. Expected Output
+After helping them fix their code, you should be able to fully run the Quarto Report with no errors, and all dynamically updated values in the Quarto Report based on how your code processes the raw data should match the expected values stated. 
+Here are some hints:
+
++ There are 8 total bugs
+  + 3 in import_and_process.R
+  + 1 in score_questionnaire.R
+  + 1 in summarize_behavior.R
+  + 1 in calculate_iat_dscore.R
+  + 1 in build_participant_wide.R
+  + 0 in project2.qmd
+
++ Be on the lookout for issues like typos, bad paths, misused or missing arguments, bad indexing, and more.
++ Keep notes! Later you will refactor the code in a few places, and then compare with AI suggestions. It will be helpful to remember what you changed and why from the original code.
++ You will also need to redo their data visualizations using ggplot2 instead of base R
+
+### F. Tips to Get Started:
+
+You may approach the debugging in any fashion you see fit. However, here are some recommendations:
+
+#### Line-by-line Walkthrough
+
+**1. Import one participant's data into your global environment:**
+
+```r
+file_name <- "sub-001_P2P1_CONGfirst.csv"
+```
+
+You’ll use this file for all debugging.
+
+**2. Walk through `import_and_process()` line by line**
+
+Open `import_and_process.R` and run each line manually in your console, or by inserting `browser()` at the beginning of the function.
+
+To work with `browser()`:
+
++ Press `c` and press Enter to continue (runs the rest of the function and exits debugging mode)
++ Press `n` and press Enter to step to the next single line of code
++ Use `ls()` to inspect the current environment
++ Type `q` and Enter to quit debugging and exit the function
+
+As you go, print and inspect objects (like `df`, `subject_id`, or `task_df`) so you can confirm they look correct.
+
+Common inspect functions you may use:
+
++ `head()`
++ `str()`
++ `unique()`
++ `table()`
++ `names()`
++ `print()`
+
+**3. Test each helper function (summarize_behavior, score_questionnaire, calculate_iat_dscore) in isolation**
+
+Focus on making one change at a time and testing what it does. Remember to save the R scripts after each change and re-source them so that you are using the most recent file.
+
+Whenever the script reaches a point where it calls another function—for example:
+  ```r
+  behavior <- summarize_behavior(task_df)
+  ```
+you will need to create the object(s) that the next function expects in your global environment, at least temporarily. For example:
+
+In `import_and_process()`, the raw participant file is eventually split into a data frame called `task_df`.
+
+That object is then passed into `summarize_behavior()` as the first argument:
+```r
+behavior <- summarize_behavior(task_df)
+```
+  
+Inside `summarize_behavior()`, the function signature is:
+```r
+summarize_behavior(data, rt_min = 300, rt_max = 900)
+```
+
+So whatever is passed in (`task_df`) is automatically assigned to the argument name `data` within the function.
+
+To test `summarize_behavior()` line by line, you must first give yourself a variable named `data` that contains the same object as well as assign any variables to match the argument names. At the appropriate step, copy and paste this into your console and run it once:
+```r
+data <- task_df
+rt_min <- 300
+rt_max <- 900
+```
+
+You will need to do the same thing to test `score_questionnaire()` which expects a JSON object text string as the first argument, which it will assign to be `json_string` throughout the function. The JSON string is stored in the row where `trialType == "Questionnaire"` and in the `response` column.
+
+
+**4. Confirm the final participant-level output**
+
+Once every script runs cleanly for this one participant, the final object created by `import_and_process()` should match this structure and values:
+
+  subject_id anxiety_score congruent_mean incongruent_mean congruent_accuracy incongruent_accuracy
+1    sub-001           2.2        600.852         650.1187             0.9375            0.8387097
+    d_score
+1 0.4238272
+
+If these numbers are close (minor floating-point differences are expected), your individual-level scripts are working.
+
+**5. Use a small “test script” for quick re-runs**
+
+Once you’ve finished your line-by-line debugging, you can create a short script such as:
+
+```r
+## test_debug.R
+
+## Clear global environment (mimick how Quarto works)
+rm(list = ls())
+
+## Source all scripts
+source(here::here("scripts/calculate_iat_dscore.R"))
+source(here::here("scripts/score_questionnaire.R"))
+source(here::here("scripts/summarize_behavior.R"))
+source(here::here("scripts/import_and_process.R"))
+source(here::here("scripts/build_participant_wide.R"))
+
+## Set one file name
+file_name <- "sub-001_P2P1_CONGfirst.csv"
+
+## Test functions
+df_clean <- import_and_process(file_name)
+print(df_clean)
+```
+
+Don’t put this inside your Quarto report and use it only for local testing. Use this script to quickly test all of the calls in the order they appear in the Quarto report after making changes to the individual scripts.
+This saves time because you don't need to re-run everything line by line unless something breaks again.
+
+Why this method works well:
+
++ You see intermediate objects at every stage.
++ You understand how arguments flow from one script to another.
++ You catch errors long before knitting the full report.
++ You have a fast way to re-test after you make an edit.
+
+Once this single-participant workflow is reliable, rendering the full Quarto report becomes much easier.
+
+
+### G. Next Steps:
+Once you have the four individual level files functioning on one participant, move to the first group-level function: `build_participant_wide()` and debug in a similar fashion. This may include returning to the individual level processing functions to adapt them to all raw participant files. You can also use your `test_debug.R` to mimic the Quarto environment by copying the code chunks from the .qmd into the script and running them in order to see where/if something breaks down.
+
+Once your Quarto report renders fully and calculated values match the expected values in the report, you have successfully debugged. Good luck, coders, you've got this!
+
+## Task 2: Refactoring
+
+Once your code is running without errors, your next job is to review it for clarity, efficiency, and style. You should not change what the code does, but you should improve how it does it.
+
+There are at least three places where the code currently works but could be written in a cleaner or more efficient way:
+
+  + 2 in `summarize_behavior.R`
+  + 1 in `build_participant_wide.R`
+  
+You are expected to:
+
+1. **Find and Revise** Look through the code and identify three locations where:
+    + A loop could be replaced with a vectorized operation
+    + A function argument is never used
+    + Indexing is not following best practices
+    + A piece of code is not used anywhere downstream
+
+2. **Refactor the Code** Make your improvements directly in the script. For each change you make:
+    + Keep the behavior the same
+    + Rewrite the code so it is shorter, clearer, or more efficient
+    + Use informative variable names
+    + Comments appropriately so they would help a future reader
+
+
+3. **Document the Changes** For each refactor, add a short comment near the updated code that explains:
+    + What you changed
+    + Why you changed it (for example, “replaced loop with vectorized code for readability and speed” or “removed unused argument to match how the function is actually called”)
+
+Optional: Improve any extra spots you notice
+If you see other sections that could be cleaned up in a similar way, you are encouraged to improve those as well. Just keep the underlying logic and results unchanged.
+
+By the end, your scripts should:
+
++ Produce the same outputs as before
++ Be easier for another student (or future you) to read and understand
+
+Show at least three clearly documented improvements.
+
+## Task 3: AI Optimization and Comparison
+
+### A. Getting AI suggestions on the original project
+
+Create a new Quarto File: `ai-refactor.qmd`.
+
+After finishing your manual debugging and refactoring, you will complete a short exercise that compares your work to AI-generated suggestions. The goal is to see where your refactoring aligns with AI recommendations and where it differs.
+
+For the first step, give the original, problematic version of the project to an AI assistant. You may have to provide AI with the original `project2.zip` file (`.R` files don't always upload)
+
+Ask the AI to review it and propose ways to improve its structure, clarity, and efficiency. You are not asking for debugging help here. The goal is to gather ideas about readability, organization, naming, modularity, and style.
+
+It is very likely that AI will suggest some things that we have not covered in this course, including dplyr, tidyverse, Makefile or targets pipelines, etc. You do not need to incorporate any of these recommendations. Please stick with the things you know. You can adjust 
+
+Good prompts include:
+
++ “Please review this R project and list 3-5 specific ways it could be optimized or made clearer. We primarily use base R, here, jsonlite, aggregate and the apply family of functions, but not dplyr or tidyverse. Please put any tidyverse recommendations in their own section and suggest at least 3 non-tidyverse improvements. We also have not learned Makefile or targets pipelines.”
++ “What are the top structural or stylistic improvements that would make this codebase easier to read and maintain? We primarily use base R, here, jsonlite, aggregate and the apply family of functions, but not dplyr or tidyverse. Please put any tidyverse recommendations in their own section and suggest at least non-tidyverse improvements.”
++ “What functions or sections should be reorganized or rewritten to make the workflow more coherent? We primarily use base R, here, jsonlite, aggregate and the apply family of functions, but not dplyr or tidyverse. Please put any tidyverse recommendations in their own section and suggest at least non-tidyverse improvements.”
+
+Record the suggestions you receive in your `ai-refactor.qmd`.
+
+### B. Getting AI suggestions on your refactored version
+
+Next, give the AI your own refactored and working version of the project.
+Ask it the same type of questions: focus on structure, clarity, and efficiency, not bug fixing.
+
+Example prompts:
+
++ “Here is my refactored version of the same project. What improvements would you recommend now?”
++ “Please identify remaining opportunities to streamline or reorganize this codebase.”
+
+The point is to see:
+
++ what improvements you already captured on your own,
++ what improvements your version needed that the original also needed,
++ what changes the AI suggests only after seeing your refactor.
+
+Keep the feedback you receive. You will compare it to both your own refactor and the suggestions made for the original code.
+
+### C. Writing your comparison report in Quarto
+
+Your final step is to create a short online Quarto Report (`ai-refactor.qmd`) that summarizes what you found.
+This report should include:
+
++ A brief description of the original issues
++ A summary of your refactoring choices including what you changed and why you changed it.
++ A list or short set of bullet points showing the optimization ideas the AI gave for the unedited project.
++ A list or short set of bullet points showing the optimization ideas the AI gave for your refactored version.
+
+Then write a comparison section:
+Discuss where your own changes matched the AI’s ideas, where you differed, and what you learned from the comparison.
+This can include organizational changes, naming conventions, function design, file structure, avoidance of repeated code, or any other structural points the AI highlighted.
+
+Optional but encouraged: examples
+You may include small code snippets that show “before vs. after” improvements, as long as you keep them short and focused.
+
+Render this Quarto document and sync all project files to your GitHub account. Your write-up does not need to be long; clarity is the priority.
+
+# Submitting
+
+Once you are done, you will commit all files to your GitHub repository and submit the link to:
+
+1. your overall project including all code
+2. the GitHub pages link to your rendered project2.html
+3. the GitHub pages link to your rendered ai-refactor.html
+
+**All links will be submitted via [GradeScope](https://www.gradescope.com/courses/987923/assignments/7191209/).**
+
+**Your final project is due by 11:59pm ET on Friday, December 12, 2025.**

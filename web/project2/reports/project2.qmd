@@ -1,0 +1,351 @@
+---
+title: "Project 2 — IAT Data Analysis Pipeline"
+author: "Maya Komakhidze"
+format:
+  html:
+    fig-number: true
+execute:
+  echo: true
+  warning: true
+  message: true
+---
+
+## Workflow Overview
+
+At the individual level, each participant’s raw `.csv` file is processed by `import_and_process.R`. This script extracts the subject ID, checks that required columns are present, and then hands off the data to separate helper scripts: 
+
++ `score_questionnaire.R` parses the JSON questionnaire response and returns a single anxiety score. 
++ `summarize_behavior.R` cleans and organizes the IAT trials, computes mean reaction times and accuracy for congruent and incongruent blocks, and calls `calculate_iat_dscore.R` to compute the participant’s D-score. 
+
+These behavioral values and the questionnaire score are combined into a one-row summary and saved to `data/cleaned/participants/`.
+
+At the study level, `build_participant_wide.R` loops through all raw participant files, runs each through `import_and_process()`, and stacks the results into one data frame that represents the full sample. The Quarto report (`project2.qmd`) runs all functions, performs sanity checks, computes study-level summaries and basic inferential statistics, and produces the final visualizations.
+
+## Setup Directories
+
+*We start by ensuring all of our directories are created to organize our output.*
+
+```{r}
+ensure_dir <- function(path) if (!dir.exists(path)) dir.create(path, recursive = TRUE, showWarnings = FALSE)
+ensure_dir(file.path(here::here("data","raw")))
+ensure_dir(file.path(here::here("data","cleaned")))
+ensure_dir(file.path(here::here("outputs","tables")))
+ensure_dir(file.path(here::here("outputs","plots")))
+```
+
+---
+
+## Libraries 
+
+*Load all relevant package libraries using `pacman`.*
+
+```{r}
+if (!require("pacman")) {
+  install.packages("pacman"); library(pacman, quietly = TRUE)
+}
+p_load("ggplot2", "here", "jsonlite")
+```
+
+---
+
+## Load helpers
+
+*Source all scripts for use.*
+
+```{r}
+source(here::here("scripts/calculate_iat_dscore.R"))
+source(here::here("scripts/score_questionnaire.R"))
+source(here::here("scripts/summarize_behavior.R"))
+source(here::here("scripts/import_and_process.R"))
+source(here::here("scripts/build_participant_wide.R"))
+```
+
+---
+
+## Build participant-wide table 
+
+*Process all 60 participants and create study-level data frame.*
+
+```{r}
+participant_wide <- build_participant_wide()
+nrow(participant_wide)
+head(participant_wide, 6)
+tail(participant_wide, 6)
+```
+
+---
+
+## Sanity checks 
+
+(there are no errors in this section; these sanity checks are designed to help you find errors elsewhere in the code (which you may or may not have already fixed))
+
+*Check for missing values in key summary measures*
+
+```{r}
+cols <- c("congruent_mean", "incongruent_mean",
+          "congruent_accuracy", "incongruent_accuracy",
+          "d_score", "anxiety_score")
+
+participant_wide[, cols] |>
+  is.na() |>
+  colSums() |>
+  (\(x) {
+    data.frame(
+      variable  = names(x),
+      n_missing = unname(x),
+      expected  = 0
+    )
+  })() |>
+  print()
+```
+
+The table above shows the number of missing values for each study-level variable. The `expected` column indicates the target of 0 missing values for each variable.
+
+There are a total of `r length(list.files(here::here("data", "raw"), pattern = "\\.csv$", full.names = FALSE))` raw participant files, and a total of `r nrow(participant_wide)` participants included in `participant_wide`. These values `r ifelse(length(list.files(here::here("data", "raw"), pattern = "\\.csv$", full.names = FALSE)) == nrow(participant_wide), "are equal length.", "are not equal length. Check list.files processing.")`
+
+`r ifelse(any(duplicated(participant_wide$subject_id)), paste("Duplicate subjects found. Investigate import or filename parsing."), paste("All subject IDs are unique."))`
+
+The range of congruent reaction times is `r round(range(participant_wide$congruent_mean, na.rm = TRUE), 1)[1]` - `r round(range(participant_wide$congruent_mean, na.rm = TRUE), 1)[2]` ms. *(Expected: 550.5 - 607.8 ms)*
+
+The range of incongruent reaction times is `r round(range(participant_wide$incongruent_mean, na.rm = TRUE), 1)[1]` - `r round(range(participant_wide$incongruent_mean, na.rm = TRUE), 1)[2]` ms. *(Expected: 628.8 - 709.9 ms)*
+
+The range of congruent accuracy is `r round(range(participant_wide$congruent_accuracy, na.rm = TRUE), 1)[1]` - `r round(range(participant_wide$congruent_accuracy, na.rm = TRUE), 1)[2]`. *(Expected: 0.9 - 1)*
+
+The range of incongruent accuracy is `r round(range(participant_wide$incongruent_accuracy, na.rm = TRUE), 1)[1]` - `r round(range(participant_wide$incongruent_accuracy, na.rm = TRUE), 1)[2]`. *(Expected: 0.7 - 1)*
+
+The current `participant_wide` data frame has `r dim(participant_wide)[1]` rows and `r dim(participant_wide)[2]` columns. *(Expected: 60 rows and 7 columns)*
+
+---
+
+## Calculate and Report Study Means 
+
+*Calculate overall means and standard deviations for each variable.*
+
+```{r}
+cols <- c("congruent_mean",
+          "incongruent_mean",
+          "congruent_accuracy",
+          "incongruent_accuracy",
+          "d_score",
+          "anxiety_score")
+
+df_vals <- participant_wide[, cols]
+
+## Calculate Means for all measures
+means <- colMeans(df_vals, na.rm = TRUE)
+
+## Calculate Standard Deviations for all measures
+sds <- apply(df_vals, 2, sd, na.rm = TRUE)
+
+## Calculate Standard Errors for all measures
+ses <- apply(
+  df_vals,
+  2,
+  function(x) sd(x, na.rm = TRUE) / sqrt(sum(!is.na(x)))
+)
+
+```
+
+*Calculate test statistics (there are no errors in this section)*
+
+```{r}
+## RT paired t-test
+rt_ttest <- t.test(participant_wide$congruent_mean,
+                   participant_wide$incongruent_mean,
+                   paired = TRUE)
+
+## Accuracy paired t-test
+acc_ttest <- t.test(participant_wide$congruent_accuracy,
+                    participant_wide$incongruent_accuracy,
+                    paired = TRUE)
+
+## Correlation between d-score and anxiety score
+d_anx_cor <- cor(participant_wide$d_score,
+                 participant_wide$anxiety_score,
+                 use = "complete.obs")
+d_anx_test <- cor.test(participant_wide$d_score,
+                       participant_wide$anxiety_score)
+
+```
+
+Congruent reaction times were `r round(unname(means["congruent_mean"]), 2)` ± `r round(unname(sds["congruent_mean"]), 2)` ms. _(Expected: 583.04 ± 13.49 ms.)_
+
+Incongruent reaction times were `r round(unname(means["incongruent_mean"]), 2)` ± `r round(unname(sds["incongruent_mean"]), 2)` ms. _(Expected: 663.58 ± 16.55 ms.)_
+
+The congruent vs incongruent RT difference (`r round(unname(means["congruent_mean"] - means["incongruent_mean"]), 2)` ms) `r ifelse(rt_ttest$p.value < 0.05, "was statistically significant", "was not statistically significant")`, *p* = `r signif(rt_ttest$p.value, 3)`. This means that congruent RTs were `r ifelse(means["congruent_mean"] - means["incongruent_mean"] > 0, "slower", "faster")` than incongruent RTs.
+
+
+Congruent accuracy was `r round(unname(means["congruent_accuracy"] * 100), 2)` ± `r round(unname(sds["congruent_accuracy"] * 100), 2)`%. _(Expected: 95.3 ± 2.58%)_
+
+Incongruent accuracy was `r round(unname(means["incongruent_accuracy"] * 100), 2)` ± `r round(unname(sds["incongruent_accuracy"] * 100), 2)`%. _(Expected: 87.93 ± 4.6%)_
+
+The congruent vs incongruent accuracy difference (`r round(unname((means["congruent_accuracy"] - means["incongruent_accuracy"]) * 100), 2)`%) `r ifelse(acc_ttest$p.value < 0.05, "was statistically significant", "was not statistically significant")`, *p* = `r signif(acc_ttest$p.value, 3)`. This means that congruent trials were `r round(unname((means["congruent_accuracy"] - means["incongruent_accuracy"]) * 100), 2)`% `r ifelse(means["congruent_accuracy"] > means["incongruent_accuracy"], "more", "less")` accurate than incongruent trials.
+
+The average D-score was `r round(unname(means[5]), 2)` ± `r round(unname(sds[5]), 2)`, indicating a `r ifelse(means[5] > 0, "positive (congruent-faster)", ifelse(means[5] < 0, "negative (incongruent-faster)", "neutral"))` implicit association, meaning on average people `r ifelse(means[5] > 0, "associate nature with serenity and math with anxiety", ifelse(means[5] < 0, "associate nature with anxiety and math with serenity", "do not associate nature or math with serenity or anxiety"))`. This bias (r = `r round(d_anx_cor, 2)`) `r ifelse(d_anx_test$p.value < 0.05, "was", "was not")` correlated with participants' anxiety scores (*p* = `r round(d_anx_test$p.value, 3)`).
+
+---
+
+## Visuals (base R)
+
+*Plot basic visuals of our data.*
+
+```{r}
+if (sum(is.finite(participant_wide$d_score)) > 0) {
+  
+  d_mean <- mean(participant_wide$d_score, na.rm = TRUE)
+  d_sd   <- sd(participant_wide$d_score,  na.rm = TRUE)
+  
+  hist(
+    participant_wide$d_score,
+    breaks = 5,
+    main   = "Distribution of IAT D-scores",
+    xlab   = "D-score",
+    ylab   = "Count",
+    col    = "lightgray",
+    border = "white"
+  )
+  
+  ## Add mean line
+  abline(v = d_mean, col = "blue", lwd = 2)
+  
+  ## Add ±1 SD lines
+  abline(v = d_mean + d_sd, col = "red", lwd = 2, lty = 2)
+  abline(v = d_mean - d_sd, col = "red", lwd = 2, lty = 2)
+}
+```
+*Figure.* Histogram of D-scores with mean (blue line) and ±1 SD (red dashed lines). Positive values reflect faster responding in the congruent condition. The mean D-score was `r round(unname(means["d_score"]), 2)`.
+
+---
+
+
+```{r}
+bar_vals <- c(means["congruent_mean"], means["incongruent_mean"])
+sd_vals  <- c(sds["congruent_mean"],   sds["incongruent_mean"])
+
+## Create the bar plot
+bp <- barplot(
+  bar_vals,
+  names.arg = c("Congruent", "Incongruent"),
+  col = c("gray70", "gray40"),
+  ylab = "Mean RT (ms)",
+  ylim = c(0, max(bar_vals + sd_vals) * 1.1)
+)
+
+## Add error bars
+arrows(
+  x0 = bp, y0 = bar_vals - sd_vals,
+  x1 = bp, y1 = bar_vals + sd_vals,
+  angle = 90, code = 3, length = 0.05, lwd = 2
+)
+```
+*Figure.* Mean reaction times for congruent and incongruent trials. Errors represent standard errors (mean ± SD). Congruent trials averaged `r round(unname(means["congruent_mean"]), 2)` ± `r round(unname(sds["congruent_mean"]), 2)` ms, and incongruent trials averaged `r round(unname(means["incongruent_mean"]), 2)` ± `r round(unname(sds["incongruent_mean"]), 2)` ms. As expected, congruent trials were faster than incongruent trials, with an average difference of `r round(unname(means["incongruent_mean"] - means["congruent_mean"]), 2)` ms.
+
+---
+
+```{r}
+## Extract values
+d_vals  <- participant_wide$d_score
+anx_vals <- participant_wide$anxiety_score
+
+## Calculate correlation
+d_anx_cor <- cor(d_vals, anx_vals, use = "complete.obs")
+
+## Plot
+plot(d_vals, anx_vals,
+     main = "Correlation Between D-score and Anxiety",
+     xlab = "D-score",
+     ylab = "Anxiety Score",
+     pch = 19, col = "gray40")
+
+## Add regression line
+abline(lm(anx_vals ~ d_vals), col = "blue", lwd = 2)
+
+## Add correlation label on the plot
+text(x = min(d_vals, na.rm = TRUE),
+     y = max(anx_vals, na.rm = TRUE),
+     labels = paste("r =", round(d_anx_cor, 2)),
+     pos = 4)
+```
+*Figure.* Scatterplot showing the relationship between D-scores and anxiety scores. Each point represents one participant, with the blue line showing the best-fit regression line. The observed correlation was `r round(d_anx_cor, 2)`.
+
+---
+
+## Advanced Visuals (ggplot2)
+
+*Your Task: Recreate the above base R plots with ggplot2. Improve the overall aesthetic (axes, labels/titles, color, etc.) using a custom theme. Don't forget to save your plots.*
+
+
+```{r}
+#| fig-cap: "Distribution of D scores"
+## TODO: Use ggplot2 to re-create:
+## (1) histogram of D-scores and 
+d_mean <- mean(participant_wide$d_score, na.rm = TRUE)
+d_sd   <- sd(participant_wide$d_score,  na.rm = TRUE)
+d_plot <- ggplot(participant_wide, aes(d_score)) +
+  geom_histogram() +
+  geom_vline(xintercept = c(d_mean,d_mean-d_sd, d_mean+d_sd),
+             color = c("darkblue", "darkred", "darkred")) +
+  labs(title = "Distribution of D scores", x = "D score", y = "Count") +
+  theme_minimal()
+print(d_plot)
+```
+
+```{r}
+#| fig-cap: "Mean reaction times for congruent and incongruent trials"
+## (2) bar plot of mean RTs. Include standard error bars.
+plot_df <- data.frame(category = c("congruent", "incongruent"),
+                      mean_values = c(means["congruent_mean"], 
+                                      means["incongruent_mean"]),
+                      se_values = c(ses["congruent_mean"],
+                                    ses["incongruent_mean"]),
+                      row.names = NULL)
+mean_score_barplot <- ggplot(plot_df, aes(category, mean_values)) +
+  geom_col(fill = "grey") +
+  geom_errorbar(aes(ymin = mean_values - 2*se_values,
+                ymax = mean_values + 2*se_values), width = 0.2, col="steelblue") +
+  labs(title = "Mean RT on congruent and incongruent trials", x = "Category",
+       y = "Mean values") +
+  theme_minimal()
+
+print(mean_score_barplot)
+
+```
+
+```{r}
+#| fig-cap: "Correlation between anxiety and d_scores"
+cor_plot <- ggplot(participant_wide, aes(anxiety_score, d_score)) +
+  geom_point() +
+  geom_smooth(method = "lm", color = "darkred") +
+  labs(title = "Relationship between anxiety and D scores",
+       x = "Anxiety",
+       y = "D score") +
+  theme_minimal()
+
+print(cor_plot)
+```
+
+---
+
+## Export outputs 
+
+*Save all generated files and base plots.*
+
+Save study-level files
+```{r}
+## Save participant_wide data frame
+write.csv(participant_wide, here::here("outputs", "tables", "participant_wide.csv"), row.names = FALSE)
+
+"Saved base outputs. Check output/plots and output/tables for correct files."
+```
+
+---
+
+
+# Save ggplot plots.
+```{r}
+"Saved ggplot outputs."
+ggsave("cor_plot.png", cor_plot, path = here::here("outputs","plots"))
+ggsave("mean_score_barplot.png", mean_score_barplot, 
+       path = here::here("outputs","plots"))
+ggsave("d_plot.png", d_plot, path = here::here("outputs","plots"))
+```
